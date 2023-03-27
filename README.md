@@ -1,16 +1,8 @@
 # covid19
 
-A new Flutter project.
+## 2023-03-27 진행상황
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![image](https://user-images.githubusercontent.com/58906858/227950005-a6e035d5-d5d6-4848-a3bd-00ac59fde666.png)
+```
+공공데이터포털에서 API 키를 발급받고 xml 형식의 데이터를 요청하고 응답받는 데까지는 성공
+```
