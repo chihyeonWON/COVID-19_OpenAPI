@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -14,9 +16,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '코로나 현황',
       theme: ThemeData(
-          primaryColor: const Color(0xFF264653),
-          primaryColorDark: const Color(0xFF2A9D8F),
-          primaryColorLight: const Color(0xFFE9C46A),
+        primaryColor: Colors.yellow,
+        primaryColorDark: Colors.black,
+        primaryColorLight: Colors.white,
       ),
       home: MainPage(),
     );
@@ -24,36 +26,15 @@ class MyApp extends StatelessWidget {
 }
 
 class CovidItem {
-  String ? accDefRate;
-  String ? accExamCnt;
-  String ? accExamCompCnt;
-  String ? careCnt;
-  String ? clearCnt;
-  String ? deathCnt;
-  String ? decideCnt;
-  String ? examCnt;
-  String ? resutlNegCnt;
-  String ? seq;
-  String ? stateDt;
-  String ? stateTime;
-  String ? updateDt;
-  String ? createDt;
+  String? decideCnt;
+  String? deathCnt;
+  String? stateDt;
 
-  CovidItem(
-      {this.accDefRate,
-        this.accExamCnt,
-        this.accExamCompCnt,
-        this.careCnt,
-        this.clearCnt,
-        this.deathCnt,
-        this.decideCnt,
-        this.examCnt,
-        this.resutlNegCnt,
-        this.seq,
-        this.stateDt,
-        this.stateTime,
-        this.updateDt,
-        this.createDt});
+  CovidItem({
+    this.deathCnt,
+    this.decideCnt,
+    this.stateDt,
+  });
 }
 
 class MainPage extends StatefulWidget {
@@ -61,6 +42,8 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> {
+  DateTime now = DateTime.now();
+
   XmlDocument? CovidStatusXML;
   CovidItem covidItem = new CovidItem();
 
@@ -74,8 +57,11 @@ class MainPageState extends State<MainPage> {
           IconButton(
             icon: Icon(Icons.sync),
             onPressed: () async {
-              const url =
-                  "http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson?ServiceKey=%2Bq9x0o3JKslktVZYJMi%2FTrYW9IuJxIVueR07WYc84pWlM3OvnmhzshQpfTNJkcZHIQIgi%2FpKjS0kbMBYx8vqvA%3D%3D&pageNo=1&numOfRows=10&startCreateDt=20210117&endCreateDt=20210117";
+              var formatNow = DateFormat('yyyyMMdd').format(now);
+
+              String url =
+                  "http://openapi.data.go.kr/openapi/service/rest/Covid19/getCovid19InfStateJson?ServiceKey=%2Bq9x0o3JKslktVZYJMi%2FTrYW9IuJxIVueR07WYc84pWlM3OvnmhzshQpfTNJkcZHIQIgi%2FpKjS0kbMBYx8vqvA%3D%3D&pageNo=1&numOfRows=10&startCreateDt=${formatNow}&endCreateDt=${formatNow}";
+
               var response = await http.get(Uri.parse(url));
 
               // print(response.body);
@@ -86,20 +72,9 @@ class MainPageState extends State<MainPage> {
 
               items.forEach((element) {
                 covidItem = CovidItem(
-                  accDefRate: element.getElement('accDefRate')!.text,
-                  accExamCnt: element.getElement('accExamCnt')!.text,
-                  accExamCompCnt: element.getElement('accExamCompCnt')!.text,
-                  careCnt: element.getElement('careCnt')!.text,
-                  clearCnt: element.getElement('clearCnt')!.text,
-                  deathCnt: element.getElement('deathCnt')!.text,
-                  decideCnt: element.getElement('decideCnt')!.text,
-                  examCnt: element.getElement('examCnt')!.text,
-                  resutlNegCnt: element.getElement('resutlNegCnt')!.text,
-                  seq: element.getElement('seq')!.text,
-                  stateDt: element.getElement('stateDt')!.text,
-                  stateTime: element.getElement('stateTime')!.text,
-                  updateDt: element.getElement('updateDt')!.text,
-                  createDt: element.getElement('createDt')!.text,
+                  deathCnt: element.getElement('deathCnt')?.text,
+                  decideCnt: element.getElement('decideCnt')?.text,
+                  stateDt: element.getElement('stateDt')?.text,
                 );
               });
             },
@@ -119,7 +94,7 @@ class MainPageState extends State<MainPage> {
               ],
               colors: [
                 Theme.of(context).primaryColorLight,
-                Theme.of(context).backgroundColor,
+                Colors.white,
               ]),
         ),
         child: Container(
@@ -137,16 +112,7 @@ class MainPageState extends State<MainPage> {
                       title: "확진자",
                       value: covidItem.decideCnt ?? "",
                       textStyle: TextStyle(
-                        fontSize: 36,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "격리해제",
-                      value: covidItem.clearCnt.toString(),
-                      textStyle: TextStyle(
-                        fontSize: 36,
+                        fontSize: 30,
                       ),
                     ),
                   ),
@@ -155,19 +121,10 @@ class MainPageState extends State<MainPage> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "검사진행",
-                      value: covidItem.examCnt.toString(),
-                      textStyle: TextStyle(
-                        fontSize: 36,
-                      ),
-                    ),
-                  ),
                   Expanded(
                     child: _CovidItemPanel(
                       title: "사망자",
-                      value: covidItem.deathCnt.toString(),
+                      value: covidItem.deathCnt ?? "",
                       textStyle: TextStyle(
                         fontSize: 36,
                       ),
@@ -178,66 +135,12 @@ class MainPageState extends State<MainPage> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "치료중인 환자",
-                      value: covidItem.careCnt.toString(),
-                      textStyle: TextStyle(
-                        fontSize: 36,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "결과 음성",
-                      value: covidItem.resutlNegCnt.toString(),
-                      textStyle: TextStyle(
-                        fontSize: 32,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "누적검사",
-                      value: covidItem.accExamCnt.toString(),
-                      textStyle: TextStyle(
-                        fontSize: 32,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "누적 검사 완료",
-                      value: covidItem.accExamCompCnt.toString(),
-                      textStyle: TextStyle(
-                        fontSize: 32,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: _CovidItemPanel(
-                      title: "누적 환진률",
-                      textStyle: TextStyle(
-                        fontSize: 36,
-                      ),
-                    ),
-                  ),
                   Expanded(
                     child: _CovidItemPanel(
                       title: "등록일",
-                      value: covidItem.createDt.toString(),
+                      value: covidItem.stateDt ?? "",
                       textStyle: TextStyle(
-                        fontSize: 36,
+                        fontSize: 30,
                       ),
                     ),
                   ),
@@ -251,9 +154,9 @@ class MainPageState extends State<MainPage> {
   }
 }
 
-
 class _CovidItemPanel extends StatefulWidget {
-  _CovidItemPanel({Key? key, this.title, this.value, this.textStyle}): super(key: key);
+  _CovidItemPanel({Key? key, this.title, this.value, this.textStyle})
+      : super(key: key);
 
   String? title;
   String? value;
@@ -283,9 +186,7 @@ class _CovidItemPanelState extends State<_CovidItemPanel> {
               tileMode: TileMode.repeated),
           boxShadow: [
             BoxShadow(
-                offset: const Offset(5, 5),
-                blurRadius: 5,
-                spreadRadius: 1),
+                offset: const Offset(5, 5), blurRadius: 5, spreadRadius: 1),
           ]),
       child: Column(
         children: [
@@ -296,7 +197,7 @@ class _CovidItemPanelState extends State<_CovidItemPanel> {
               widget.title.toString(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 17,
               ),
             ),
           ),
